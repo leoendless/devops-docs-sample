@@ -24,16 +24,15 @@ pipeline {
     stage('get dependencies') {
       steps {
         container('nodejs') {
-          sh 'yarn config set registry https://registry.npm.taobao.org'
-          sh 'yarn install --no-lockfile'
+          sh 'npm install -g cnpm --registry=https://registry.npm.taobao.org'
+          sh 'cnpm i --no-package-lock'
         }
-
       }
     }
     stage('unit test') {
       steps {
         container('nodejs') {
-          sh 'yarn test'
+          sh 'cnpm test'
         }
 
       }
@@ -41,7 +40,7 @@ pipeline {
     stage('build & push snapshot') {
       steps {
         container('nodejs') {
-          sh 'yarn build'
+          sh 'cnpm build'
           sh 'docker build -t docker.io/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER .'
           withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$DOCKERHUB_CREDENTIAL_ID" ,)]) {
             sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
